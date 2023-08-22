@@ -6,6 +6,8 @@ namespace Yard\OpenWOO;
 
 use WP_Query;
 use Yard\OpenWOO\Foundation\ServiceProvider;
+use Yard\OpenWOO\Migrate\MigrateMetaboxValues;
+use Yard\OpenWOO\Migrate\MigrateToCMB2;
 use Yard\OpenWOO\RestAPI\RestAPIServiceProvider;
 
 class OpenWOOServiceProvider extends ServiceProvider
@@ -24,10 +26,10 @@ class OpenWOOServiceProvider extends ServiceProvider
         $this->plugin->loader->addAction('wp_insert_post_data', $this, 'fillTitle', 10, 1);
         $this->plugin->loader->addAction('wp_after_insert_post', $this, 'updateSavedPost', 10, 3);
         $this->plugin->loader->addAction('init', $this, 'registerPostTypes');
-        $this->plugin->loader->addAction('init', $this, 'registerTaxonomies');
         $this->plugin->loader->addAction('pre_get_posts', $this, 'orderByPublishedDate');
-        $this->plugin->loader->addFilter('rwmb_meta_boxes', $this, 'registerMetaboxes', 10, 1);
         (new RestAPIServiceProvider($this->plugin))->register();
+        (new MigrateMetaboxValues())->register();
+        (new MigrateToCMB2())->register();
     }
 
     /**
@@ -39,7 +41,7 @@ class OpenWOOServiceProvider extends ServiceProvider
             return $post;
         }
 
-        $post['post_title'] = isset($_POST['woo_Titel']) ? \esc_attr($_POST['woo_Titel']) : $post['post_title'];
+        $post['post_title'] = isset($_POST['woo_Onderwerp']) ? \esc_attr($_POST['woo_Onderwerp']) : $post['post_title'];
 
         return $post;
     }
@@ -73,27 +75,9 @@ class OpenWOOServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register metaboxes.
-     *
-     * @param $rwmbMetaboxes
-     *
-     * @return array
-     */
-    public function registerMetaboxes($rwmbMetaboxes)
-    {
-        $metaboxes = $this->plugin->config->get('metaboxes') ?? [];
-
-        return array_merge($rwmbMetaboxes, \apply_filters('yard/openwoo/before-register-metaboxes', $metaboxes));
-    }
-
-    /**
      * Add default order.
-     *
-     * @param WP_Query $query
-     *
-     * @return void
      */
-    public function orderByPublishedDate(WP_Query $query)
+    public function orderByPublishedDate(WP_Query $query): void
     {
         if (! is_admin()) {
             return;
@@ -119,7 +103,7 @@ class OpenWOOServiceProvider extends ServiceProvider
         \register_post_type(self::POSTTYPE, [
             'label'              => 'OpenWOO',
             'public'             => true,
-            'publicly_queryable' => false,
+            'publicly_queryable' => true,
             'show_ui'            => true,
             'show_in_menu'       => true,
             'show_in_rest'       => true,
@@ -130,18 +114,5 @@ class OpenWOOServiceProvider extends ServiceProvider
             'menu_position'      => null,
             'supports'           => ['author', 'excerpt']
         ]);
-    }
-
-    public function registerTaxonomies(): void
-    {
-        $taxonomies = $this->plugin->config->get('taxonomies') ?? [];
-
-        if (empty($taxonomies)) {
-            return;
-        }
-
-        foreach ($taxonomies as $taxonomyName => $taxonomy) {
-            \register_taxonomy($taxonomyName, $taxonomy['object_types'], $taxonomy['args']);
-        }
     }
 }

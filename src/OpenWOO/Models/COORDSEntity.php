@@ -4,8 +4,7 @@ namespace Yard\OpenWOO\Models;
 
 class COORDSEntity extends AbstractEntity
 {
-    /** @var array */
-    protected $required = ['X', 'Y'];
+    protected array $required = ['X', 'Y'];
 
     protected function data(): array
     {
@@ -14,8 +13,8 @@ class COORDSEntity extends AbstractEntity
         }
 
         return [
-            'X' => (int) $this->data[self::PREFIX . 'X'] ?? '',
-            'Y' => (int) $this->data[self::PREFIX . 'Y'] ?? '',
+            'X' => ! empty($this->data[self::PREFIX . 'X']) ? (int) $this->data[self::PREFIX . 'X'] : '',
+            'Y' => ! empty($this->data[self::PREFIX . 'Y']) ? (int) $this->data[self::PREFIX . 'Y'] : '',
         ];
     }
 }

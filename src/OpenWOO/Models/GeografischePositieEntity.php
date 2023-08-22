@@ -4,8 +4,7 @@ namespace Yard\OpenWOO\Models;
 
 class GeografischePositieEntity extends AbstractEntity
 {
-    /** @var array */
-    protected $required = ['Longitude', 'Lattitude'];
+    protected array $required = ['Longitude', 'Lattitude'];
 
     protected function data(): array
     {
@@ -14,8 +13,8 @@ class GeografischePositieEntity extends AbstractEntity
         }
 
         return [
-            'Longitude' => (float) $this->data[self::PREFIX . 'Longitude'] ?? '',
-            'Lattitude' => (float) $this->data[self::PREFIX . 'Lattitude'] ?? '',
+            'Longitude' => ! empty($this->data[self::PREFIX . 'Longitude']) ? (float) $this->data[self::PREFIX . 'Longitude'] : '',
+            'Lattitude' => ! empty($this->data[self::PREFIX . 'Lattitude']) ? (float) $this->data[self::PREFIX . 'Lattitude'] : '',
         ];
     }
 }
