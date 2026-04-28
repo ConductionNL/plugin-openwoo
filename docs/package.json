@@ -3,7 +3,7 @@
   "version": "1.0.8",
   "description": "OpenWOO docs",
   "dependencies": {
-    "redoc-cli": "^0.13.2"
+    "redoc-cli": "^0.13.21"
   },
   "scripts": {
     "doc-build": "redoc-cli bundle ./specs/openapi.yaml --output ./index.html -t templates/template.hbs"
